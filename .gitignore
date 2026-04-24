@@ -1,0 +1,15 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Data — do not commit
+data/raw/
+data/processed/
+*.parquet
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
