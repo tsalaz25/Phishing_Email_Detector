@@ -75,4 +75,34 @@ Trains a Logistic Regression and a Linear SVM, then prints:
 - Weights for structural features (exclamation counts, sender signals, etc.)
 - Edge cases: the most confidently wrong predictions in each direction
 
+**Step 4 — Classify a custom email**
+```bash
+python predict.py
+```
+Runs the phishing detector on a new email you provide. On the very first run it
+trains the SVM model and caches it to `models/`; subsequent runs load from cache
+and start instantly.
+
+*Interactive mode* (no arguments): prompts you to paste an email body (type
+`END` on its own line to finish), a subject line, and a sender address.
+
+*File mode*: pass `--file` with a `.eml` or `.txt` file:
+```bash
+python predict.py --file path/to/email.eml
+```
+
+*Retrain*: force a fresh model fit (deletes the cache first):
+```bash
+python predict.py --retrain
+```
+
+The output includes a verdict (`PHISHING` / `LEGITIMATE`), a confidence
+percentage, the top 5 hand-crafted feature signals, and a plain-English
+explanation.
+
+> **Confidence warnings:** The model was trained on full-length emails from the
+> dataset (~200k messages). If you test with very short messages (< 50 words)
+> or text that has few vocabulary matches with the training corpus, the script
+> will print a warning that the prediction may be less reliable.
+
 When done, run `deactivate` to exit the virtual environment.
