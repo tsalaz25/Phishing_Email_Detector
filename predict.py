@@ -199,7 +199,14 @@ def _top_handcrafted_signals(
     top_k: int = 5,
 ) -> list[tuple[str, float]]:
     """Return top hand-crafted features by absolute contribution."""
-    coef = np.asarray(model.estimator.coef_).ravel()
+    # The fitted SVMs live inside the calibrated wrappers (one per CV fold).
+    # Average their coefficient vectors for a stable importance estimate.
+    fitted_coefs = []
+    for cc in model.calibrated_classifiers_:
+        # sklearn ≥1.1 uses .estimator; older versions use .base_estimator
+        inner = getattr(cc, "estimator", None) or cc.base_estimator
+        fitted_coefs.append(np.asarray(inner.coef_).ravel())
+    coef = np.mean(fitted_coefs, axis=0)
     offset = len(extractor.feature_names) - len(HAND_CRAFTED_NAMES)
     hc_coef = coef[offset:]
     hc_vals = X_row[:, offset:].toarray().ravel()
@@ -233,6 +240,34 @@ def _explanation_from_signals(signals: list[tuple[str, float]], is_phishing: boo
     return f"The strongest signals were {selected[0]}, {selected[1]}, and {selected[2]}."
 
 
+_MIN_WORD_COUNT = 50
+_MIN_TFIDF_HITS = 10
+
+
+def _ood_warnings(email_df: pd.DataFrame, X) -> list[str]:
+    """Return warnings if the input looks out-of-distribution."""
+    warnings: list[str] = []
+    body = str(email_df.iloc[0]["text"])
+    word_count = len(body.split())
+
+    if word_count < _MIN_WORD_COUNT:
+        warnings.append(
+            f"Very short email ({word_count} words). The model was trained on "
+            f"full-length emails; predictions on short messages are less reliable."
+        )
+
+    # Count how many TF-IDF features fired (non-zero entries excluding hand-crafted)
+    n_hc = len(HAND_CRAFTED_NAMES)
+    tfidf_nnz = X[0, :-n_hc].nnz if n_hc else X[0].nnz
+    if tfidf_nnz < _MIN_TFIDF_HITS:
+        warnings.append(
+            f"Only {tfidf_nnz} vocabulary terms matched the training data. "
+            f"The email text may be too different from the training corpus."
+        )
+
+    return warnings
+
+
 def _print_prediction(
     model: CalibratedClassifierCV,
     extractor: PhishingFeatureExtractor,
@@ -248,10 +283,17 @@ def _print_prediction(
 
     signals = _top_handcrafted_signals(model, extractor, X, top_k=5)
     explanation = _explanation_from_signals(signals, is_phishing=(pred == 1))
+    warnings = _ood_warnings(email_df, X)
 
     print("\n=== Prediction ===")
     print(f"Verdict: {verdict}")
     print(f"Confidence: {confidence:.2f}%")
+
+    if warnings:
+        print("\n⚠️  Confidence warnings:")
+        for w in warnings:
+            print(f"  • {w}")
+
     print("\nTop 5 hand-crafted feature signals:")
     for idx, (name, score) in enumerate(signals, start=1):
         direction = "phishing" if score >= 0 else "legitimate"
