@@ -24,9 +24,10 @@ Phishing_Email_Detector/
 You only need to do this once.
 
 **1. Create the virtual environment**
+
+Navigate to the project folder in your terminal, then run:
 ```bash
-cd ~/Desktop/CS\ 444/Phishing_Email_Detector
-python -m venv .venv
+python3 -m venv .venv
 ```
 
 **2. Activate it**
@@ -54,7 +55,7 @@ Then run each script in order:
 
 **Step 1 — Load and clean the dataset**
 ```bash
-python data_loader.py
+python3 data_loader.py
 ```
 Downloads ~200k labeled emails from HuggingFace and saves a cleaned cache
 to `data/processed/phishing_emails.parquet`. Takes 2–5 minutes on the first
@@ -62,14 +63,14 @@ run (requires internet). Subsequent runs load from cache and finish in seconds.
 
 **Step 2 — Test feature extraction**
 ```bash
-python feature_extractor.py
+python3 feature_extractor.py
 ```
 Transforms the emails into a numeric feature matrix and prints a sanity check
 showing which hand-crafted features differ most between phishing and legit emails.
 
 **Step 3 — Train models and see results**
 ```bash
-python classifier.py
+python3 classifier.py
 ```
 Trains a Logistic Regression and a Linear SVM, then prints:
 - Precision, Recall, F1, and ROC-AUC for each model
@@ -79,7 +80,7 @@ Trains a Logistic Regression and a Linear SVM, then prints:
 
 **Step 4 — Classify a custom email**
 ```bash
-python predict.py
+python3 predict.py
 ```
 Runs the phishing detector on a new email you provide. On the very first run it
 trains the SVM model and caches it to `models/`; subsequent runs load from cache
@@ -90,12 +91,12 @@ and start instantly.
 
 *File mode*: pass `--file` with a `.eml` or `.txt` file:
 ```bash
-python predict.py --file path/to/email.eml
+python3 predict.py --file path/to/email.eml
 ```
 
 *Retrain*: force a fresh model fit (deletes the cache first):
 ```bash
-python predict.py --retrain
+python3 predict.py --retrain
 ```
 
 The output includes a verdict (`PHISHING` / `LEGITIMATE`), a confidence
