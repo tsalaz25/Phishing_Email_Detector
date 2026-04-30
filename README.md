@@ -6,10 +6,12 @@ CS 444 Cybersecurity Project | Oscar M. | Isaac T. | Tomas S.
 ## Project Structure
 
 ```
-Cyber_Project/
+Phishing_Email_Detector/
 ├── data_loader.py          # Downloads + cleans the email dataset
 ├── feature_extractor.py    # Converts emails into numeric features for ML
 ├── classifier.py           # Trains models and prints evaluation results
+├── predict.py              # Runs inference on new emails (interactive or file)
+├── requirements.txt        # Python dependencies
 └── data/
     └── processed/
         └── phishing_emails.parquet   # Cached dataset (auto-generated)
@@ -23,7 +25,7 @@ You only need to do this once.
 
 **1. Create the virtual environment**
 ```bash
-cd ~/Desktop/CS\ 444/Cyber_Project
+cd ~/Desktop/CS\ 444/Phishing_Email_Detector
 python -m venv .venv
 ```
 
@@ -36,7 +38,7 @@ You should see `(.venv)` at the start of your terminal prompt.
 **3. Install dependencies**
 ```bash
 pip install --upgrade pip
-pip install datasets pandas pyarrow scikit-learn scipy
+pip install -r requirements.txt
 ```
 
 ---
